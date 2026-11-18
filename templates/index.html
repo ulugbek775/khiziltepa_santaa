@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Santa — Yangi Yil Portali</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg-dark: #071324; 
+            --sidebar-bg: #0d1f3a;
+            --bg-card: rgba(15, 34, 62, 0.85); 
+            --red: #e63946; 
+            --gold: #ffd166; 
+            --green: #2ec4b6; 
+            --text: #f1faee; 
+            --muted: #a8dadc; 
+            --border: rgba(255, 255, 255, 0.12); 
+            --transition: all 0.3s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        
+        body { 
+            background: radial-gradient(circle at top, #102a4c 0%, var(--bg-dark) 80%); 
+            color: var(--text); min-height: 100vh; display: flex; overflow-x: hidden; position: relative; text-align: left;
+        }
+
+        #snow-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999;
+        }
+
+        sidebar {
+            width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border);
+            height: 100vh; position: fixed; top: 0; left: 0; padding: 30px 20px;
+            display: flex; flex-direction: column; justify-content: space-between; z-index: 50;
+            box-shadow: 6px 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+        }
+
+        .sidebar-top { display: flex; flex-direction: column; }
+
+        .sidebar-logo {
+            font-family: 'Mountains of Christmas', cursive; font-size: 2rem; color: var(--gold);
+            text-decoration: none; margin-bottom: 35px; display: block; text-align: left;
+            text-shadow: 0 2px 10px rgba(255, 209, 102, 0.3);
+        }
+
+        .nav-links { list-style: none; display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+        .nav-links button, .nav-links .logout-btn {
+            width: 100%; color: var(--text); text-decoration: none; padding: 12px 16px;
+            border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 12px;
+            transition: var(--transition); background: rgba(255,255,255,0.02); border: 1px solid transparent;
+            text-align: left; cursor: pointer; font-size: 0.95rem;
+        }
+
+        .nav-links button:hover, .nav-links button.active {
+            background: rgba(255, 209, 102, 0.12); border-color: var(--gold); color: var(--gold); transform: translateX(4px);
+        }
+
+        .nav-links .logout-btn {
+            background: rgba(230, 57, 70, 0.1); border-color: rgba(230, 57, 70, 0.3); color: #ff758f; margin-top: 10px;
+        }
+        .nav-links .logout-btn:hover { background: rgba(230, 57, 70, 0.25); color: #fff; transform: translateX(4px); }
+
+        .mini-music-box {
+            background: rgba(7, 19, 36, 0.8); border: 1px solid var(--border); padding: 10px; border-radius: 10px; margin-top: auto;
+        }
+        .play-music-btn {
+            background: var(--gold); color: #111; border: none; width: 100%; padding: 6px;
+            border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: var(--transition);
+        }
+        .play-music-btn:hover { background: #ffbc42; }
+
+        main {
+            margin-left: 280px; flex-grow: 1; padding: 40px; position: relative; z-index: 10;
+            min-height: 100vh; display: flex; flex-direction: column; text-align: left;
+        }
+
+        .top-bar { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 25px; }
+
+        .card { 
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; 
+            padding: 35px; margin-bottom: 20px; backdrop-filter: blur(15px); box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            text-align: left; display: none; animation: fadeIn 0.4s ease forwards;
+        }
+        .card.active-tab { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input, textarea, select { 
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); 
+            background: rgba(7, 19, 36, 0.9); color: #fff; margin-top: 8px; outline: none; font-size: 0.95rem;
+            text-align: left; transition: var(--transition);
+        }
+        input:focus, textarea:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(255, 209, 102, 0.2); }
+        
+        .btn { 
+            padding: 12px 22px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; 
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); 
+            text-align: left; font-size: 0.95rem;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-primary { background: var(--red); color: #fff; }
+        .btn-primary:hover { background: #d90429; }
+        
+        .badge { 
+            padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+            background: rgba(255,209,102,0.15); color: var(--gold); display: inline-block; border: 1px solid rgba(255, 209, 102, 0.3);
+        }
+
+        .user-pill {
+            background: rgba(255, 209, 102, 0.1); border: 1px solid var(--gold); color: var(--gold);
+            padding: 8px 16px; border-radius: 30px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        .santa-motto {
+            margin-top: 40px; margin-bottom: 20px; padding: 20px; text-align: center;
+            font-family: 'Mountains of Christmas', cursive; font-size: 3rem; font-weight: 700; color: var(--gold);
+            text-shadow: 0 4px 20px rgba(255, 209, 102, 0.35), 0 0 10px rgba(230, 57, 70, 0.4);
+            letter-spacing: 2px; opacity: 0.95; user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="snow-canvas"></canvas>
+
+<audio id="bg-music" loop>
+    <source src="{{ music_url }}" type="audio/mpeg">
+</audio>
+
+<sidebar>
+    <div class="sidebar-top">
+        <a href="/" class="sidebar-logo">🎅 Game of Santa</a>
+        {% if current_user %}
+            <ul class="nav-links">
+                <li><button onclick="switchTab('game', this)" class="active">🎁 Santa o'yini</button></li>
+                <li><button onclick="switchTab('wish-section', this)">✉️ Santaga xat</button></li>
+                <li><button onclick="switchTab('chat-list', this)">💬 Suhbatlar</button></li>
+                <li><button onclick="switchTab('settings', this)">⚙️ Sozlama</button></li>
+                <li><a href="/logout" class="logout-btn">🚪 Chiqish</a></li>
+            </ul>
+        {% endif %}
+    </div>
+
+    <div class="mini-music-box">
+        <button class="play-music-btn" onclick="toggleMusic()">▶ Musiqa</button>
+    </div>
+</sidebar>
+
+<main>
+    <div class="top-bar">
+        {% if current_user %}
+            <div class="user-pill">👤 {{ current_user.name }}</div>
+        {% endif %}
+    </div>
+
+    {% if current_user %}
+        <div class="card active-tab" style="border: 2px solid var(--gold); background: linear-gradient(135deg, rgba(230,57,70,0.18), rgba(15,34,62,0.9));">
+            <span class="badge">🎄 Xush kelibsiz</span>
+            <h2 style="margin-top:12px; font-size:2.2rem; text-align: left; color: var(--gold);">Salom, xush kelibsiz, {{ current_user.name }}!</h2>
+            <p style="color:var(--muted); margin-top:12px; font-size:1.05rem; line-height: 1.6;">
+                Chap tomondagi menyu orqali Santa o'yini natijalarini ko'rishingiz, o'z sovg'a tilagingizni o'zgartirishingiz yoki suhbatlar qurishingiz mumkin.
+            </p>
+        </div>
+
+        <div id="game" class="card">
+            <span class="badge">🎁 Santa O'yini Natijalari</span>
+            <h2 style="margin-top:10px; font-size:1.8rem; text-align: left;">Sizning natijalaringiz</h2>
+            
+            {% if current_user.assignedTo %}
+                {% set target1 = users | selectattr("id", "equalto", current_user.assignedTo) | first %}
+                <div style="background:rgba(7,19,36,0.95); border-left:5px solid var(--green); padding:20px; border-radius:12px; margin-top:18px; text-align: left; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    <div style="color:var(--green); font-weight:700; font-size:0.95rem;">🎁 1-Qur'a (Secret Santa) Xabari:</div>
+                    <div style="font-size:1.5rem; font-weight:bold; color:var(--gold); margin:8px 0;">Siz "{{ target1.name }}" ga Santasiz!</div>
+                    <p style="color:var(--muted); font-size:0.95rem;">Uning tilagi: <em>"{{ target1.wish }}"</em></p>
+                </div>
+            {% else %}
+                <p style="color:var(--muted); margin-top:15px;">Hali 1-qur'a o'tkazilmadi yoki ishtirok etmadingiz.</p>
+            {% endif %}
+
+
+        </div>
+
+        <div id="wish-section" class="card">
+            <span class="badge">✉️ Xat yozish</span>
+            <h2 style="margin-top:10px; text-align: left;">Santaga xat (Tilagingiz)</h2>
+            <form action="/update_wish" method="POST" style="text-align: left; margin-top:18px;">
+                <label style="color:var(--muted); font-size:0.88rem; font-weight: 500;">Sovg'a tilagi</label>
+                <textarea name="wish" rows="4" required style="resize: vertical;">{{ current_user.wish }}</textarea>
+                <button type="submit" class="btn btn-primary" style="margin-top:15px;">Tilakni Saqlash</button>
+            </form>
+        </div>
+
+        <div id="chat-list" class="card">
+            <span class="badge">💬 Suhbatlar</span>
+            <h2 style="margin-top:10px; font-size:1.8rem; text-align: left;">Foydalanuvchilar bilan chat</h2>
+            <p style="color:var(--muted); margin-top:8px;">Yozishmoqchi bo'lgan ishtirokchini tanlang:</p>
+            <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                {% for u in users %}
+                    {% if u.id != current_user.id %}
+                        <a href="/chat?with_user={{ u.login }}" class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); justify-content: space-between;">
+                            <span>👤 {{ u.name }} (@{{ u.login }})</span>
+                            <span style="color: var(--gold); font-size: 0.85rem;">Xabar yozish &rarr;</span>
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="settings" class="card">
+            <span class="badge">⚙️ Sozlamalar</span>
+            <h2 style="margin-top:10px; text-align: left;">Sayt ko'rinishini moslash</h2>
+            <p style="color:var(--muted); font-size:0.95rem; margin-top:8px; text-align: left;">O'zingizga qulay dizayn rangini tanlang:</p>
+            <div style="margin-top:20px; max-width: 320px; text-align: left;">
+                <label style="color:var(--muted); font-size:0.85rem; font-weight: 500;">Tema tanlash</label>
+                <select id="theme-selector" onchange="changeTheme(this.value)">
+                    <option value="dark">🌙 Tungi Moviy (Standart)</option>
+                    <option value="red">🎅 Yangi Yil Qizili</option>
+                    <option value="emerald">🌲 Zumrad Yashil</option>
+                </select>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="santa-motto">
+        ✨ Biz Santaga ishonamiz 🎅
+    </div>
+</main>
+
+<script>
+    const music = document.getElementById('bg-music');
+    if(music) music.volume = 0.4;
+
+    function toggleMusic() {
+        const btn = document.querySelector('.play-music-btn');
+        if (music.paused) {
+            music.play().then(() => {
+                btn.textContent = "⏸ To'xtatish";
+            }).catch(e => console.log("Play error:", e));
+        } else {
+            music.pause();
+            btn.textContent = "▶ Musiqa";
+        }
+    }
+
+    function switchTab(tabId, btnElement) {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => card.classList.remove('active-tab'));
+
+        const targetCard = document.getElementById(tabId);
+        if (targetCard) {
+            targetCard.classList.add('active-tab');
+        }
+
+        const buttons = document.querySelectorAll('.nav-links button');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        if (btnElement) {
+            btnElement.classList.add('active');
+        }
+    }
+
+    function changeTheme(theme) {
+        const root = document.documentElement;
+        if (theme === 'red') {
+            root.style.setProperty('--bg-dark', '#3d0814');
+            root.style.setProperty('--sidebar-bg', '#540b1e');
+            root.style.setProperty('--bg-card', 'rgba(84, 11, 30, 0.85)');
+        } else if (theme === 'emerald') {
+            root.style.setProperty('--bg-dark', '#04291f');
+            root.style.setProperty('--sidebar-bg', '#073b31');
+            root.style.setProperty('--bg-card', 'rgba(7, 59, 49, 0.85)');
+        } else {
+            root.style.setProperty('--bg-dark', '#071324');
+            root.style.setProperty('--sidebar-bg', '#0d1f3a');
+            root.style.setProperty('--bg-card', 'rgba(15, 34, 62, 0.85)');
+        }
+        localStorage.setItem('santa_theme', theme);
+    }
+
+    window.onload = function() {
+        const savedTheme = localStorage.getItem('santa_theme');
+        if (savedTheme) {
+            const selector = document.getElementById('theme-selector');
+            if (selector) selector.value = savedTheme;
+            changeTheme(savedTheme);
+        }
+    };
+
+    const canvas = document.getElementById("snow-canvas");
+    const ctx = canvas.getContext("2d");
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    });
+
+    const flakes = Array.from({ length: 180 }, () => ({
+        x: Math.random() * width, y: Math.random() * height,
+        r: Math.random() * 3.5 + 1, speed: Math.random() * 1.5 + 0.5, drift: Math.random() * 0.8 - 0.4
+    }));
+
+    function animateSnow() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.beginPath();
+        for (const f of flakes) {
+            ctx.moveTo(f.x, f.y);
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+            f.y += f.speed; f.x += f.drift;
+            if (f.y > height) { f.y = -5; f.x = Math.random() * width; }
+            if (f.x > width) f.x = 0; if (f.x < 0) f.x = width;
+        }
+        ctx.fill();
+        requestAnimationFrame(animateSnow);
+    }
+    animateSnow();
+</script>
+</body>
+</html>

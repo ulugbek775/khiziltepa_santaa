@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Santa Portal — Ro'yxatdan O'tish</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-dark: #071324; --gold: #ffd166; --text: #f1faee; --muted: #a8dadc; --border: rgba(255, 255, 255, 0.14); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        body { background: radial-gradient(circle at top, #102a4c 0%, var(--bg-dark) 75%); color: var(--text); min-height: 100vh; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+        #snow-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+        .reg-box { position: relative; z-index: 10; background: rgba(13, 31, 58, 0.95); border: 2px solid var(--gold); border-radius: 24px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.7); text-align: center; }
+        .reg-box h1 { font-family: 'Mountains of Christmas', cursive; font-size: 2.5rem; color: var(--gold); margin-bottom: 5px; }
+        .form-group { margin-bottom: 12px; text-align: left; }
+        .form-group label { display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 4px; }
+        input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #071324; color: #fff; outline: none; }
+        input:focus { border-color: var(--gold); }
+        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; justify-content: center; gap: 7px; margin-top: 10px; }
+        .btn-gold { background: var(--gold); color: #111; }
+        .btn-outline { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid var(--border); text-decoration: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<canvas id="snow-canvas"></canvas>
+<div class="reg-box">
+    <h1>Yangi Hisob</h1>
+    <p style="color:var(--muted); font-size:0.9rem; margin-bottom:20px;">Secret Santa uchun ro'yxatdan o'ting</p>
+    
+    {% if error %}
+    <div style="background:rgba(230,57,70,0.2); border:1px solid #e63946; color:#ff758f; padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.85rem;">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+        <div class="form-group"><label>Ismingiz</label><input type="text" name="name" placeholder="Masalan: Azizbek" required></div>
+        <div class="form-group"><label>Yangi Login</label><input type="text" name="login" placeholder="aziz2026" required></div>
+        <div class="form-group"><label>Yangi Parol</label><input type="password" name="password" placeholder="Parol o'ylab toping" required></div>
+        <div class="form-group"><label>Sovg'a Tilagi (Ixtiyoriy)</label><input type="text" name="wish" placeholder="Kitob, shokolad..."></div>
+        <button type="submit" class="btn btn-gold">Ro'yxatdan O'tish</button>
+    </form>
+
+    <hr style="margin:20px 0; border-color:var(--border);">
+    <a href="/login" class="btn btn-outline">Allaqachon hisobim bor (Kirish)</a>
+</div>
+
+<script>
+    const canvas = document.getElementById("snow-canvas");
+    const ctx = canvas.getContext("2d");
+    let w = canvas.width = window.innerWidth, h = canvas.height = window.innerHeight;
+    const flakes = Array.from({length: 70}, () => ({x: Math.random()*w, y: Math.random()*h, r: Math.random()*3+1, speed: Math.random()*1+0.4}));
+    function snow() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        ctx.beginPath();
+        for (let f of flakes) {
+            ctx.moveTo(f.x, f.y);
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+            f.y += f.speed;
+            if (f.y > h) f.y = -5;
+        }
+        ctx.fill();
+        requestAnimationFrame(snow);
+    }
+    snow();
+</script>
+</body>
+</html>

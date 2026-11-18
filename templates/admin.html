@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - Santa Secret</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-dark: #071324; --sidebar-bg: #0b1d35; --red: #e63946; --gold: #ffd166; --text: #f1faee; --muted: #a8dadc; --border: rgba(255,255,255,0.14); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-dark);
+            color: var(--text);
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Chap yon panel (Sidebar) */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .sidebar-brand {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--gold);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 12px 15px;
+            border-radius: 10px;
+            text-align: left;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            width: 100%;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--gold);
+            color: #111;
+            border-color: var(--gold);
+            transform: translateX(4px);
+        }
+
+        /* O'ng asosiy qism */
+        .main-content {
+            flex: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            padding: 20px 30px;
+            background: rgba(11, 29, 53, 0.6);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .header h1 {
+            color: var(--gold);
+            font-size: 1.5rem;
+        }
+        .content-body {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            width: 100%;
+        }
+        .section-pane {
+            display: none;
+        }
+        .section-pane.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card { 
+            background: rgba(15,34,62,0.85); 
+            border: 1px solid var(--border); 
+            border-radius: 20px; 
+            padding: 25px; 
+            margin-bottom: 25px; 
+            text-align: left; 
+            width: 100%;
+        }
+        h2 { color: var(--gold); margin-bottom: 15px; }
+        .btn { padding: 10px 18px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+        .btn-primary { background: var(--red); color: #fff; }
+        .btn-gold { background: var(--gold); color: #111; }
+        .btn-danger { background: rgba(230,57,70,0.2); color: #ff758f; border: 1px solid rgba(230,57,70,0.4); }
+        .btn-sm { padding: 8px 14px; font-size: 0.9rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: left; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: rgba(7,19,36,0.9); color: var(--gold); }
+        input[type="text"], input[type="password"], input[type="file"] { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: #071324; color: #fff; width: 100%; }
+        .raffle-box { background: rgba(7,19,36,0.6); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px dashed var(--gold); }
+        
+        /* Xabarlar banneri */
+        .alert-success { background: rgba(46, 196, 182, 0.2); border: 1px solid #2ec4b6; color: #2ec4b6; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 600; }
+        .alert-error { background: rgba(230, 57, 70, 0.2); border: 1px solid #e63946; color: #ff758f; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <!-- CHAP YON PANEL (SIDEBAR) -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <span>⚙️</span> Admin Panel
+        </div>
+        
+        <button class="nav-btn active" onclick="switchTab(event, 'tab-home')">🏠 Salom, Ulug'bek</button>
+        <button class="nav-btn" onclick="switchTab(event, 'tab-music')">🎵 Fon Musiqasi</button>
+        <button class="nav-btn" onclick="switchTab(event, 'tab-raffle1')">🎰 1-Qur'a (Secret Santa)</button>
+        <button class="nav-btn" onclick="switchTab(event, 'tab-raffle2')">🎲 2-Qur'a (Juftliklar)</button>
+        <button class="nav-btn" onclick="switchTab(event, 'tab-users')">👥 Foydalanuvchilar</button>
+        
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px;">
+            <a href="/" class="nav-btn" style="background: rgba(255,255,255,0.03);">🌐 Bosh sahifa</a>
+            <a href="/admin/logout" class="nav-btn" style="background: rgba(230,57,70,0.1); color: #ff758f; border-color: rgba(230,57,70,0.3);">🚪 Chiqish</a>
+        </div>
+    </div>
+
+    <!-- O'NG ASOSIY QISM -->
+    <div class="main-content">
+        <div class="header">
+            <h1 id="header-title">Xush kelibsiz, Ulug'bek! 👋</h1>
+            <span style="color: var(--muted); font-size: 0.9rem;">Santa Secret 2026</span>
+        </div>
+
+        <div class="content-body">
+            
+            <!-- TIZIM XABARLARI (Muvaffaqiyatli qur'a xabari shu yerda chiqadi) -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="{% if category == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                            {% if category == 'error' %}⚠️{% else %}✅{% endif %} {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- 1. SALOM ULUG'BEK QISMI -->
+            <div id="tab-home" class="section-pane active">
+                <div class="card" style="min-height: 65vh; display: flex; flex-direction: column; justify-content: center;">
+                    <h2 style="font-size: 2.2rem;">🎄 Salom, Ulug'bek!</h2>
+                    <p style="color: var(--muted); line-height: 1.8; font-size: 1.1rem; max-width: 700px;">
+                        Admin boshqaruv markaziga xush kelibsiz. Chap tarafdagi menyu tugmalari orqali sayt musiqasini boshqarishingiz, 1- va 2-qur'alarni ishga tushirishingiz va foydalanuvchilar ro'yxatini nazorat qilishingiz mumkin.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 2. MUSIQA YUKLASH -->
+            <div id="tab-music" class="section-pane">
+                <div class="card">
+                    <h2>🎵 Sayt uchun Fon Musiqasini Yuklash</h2>
+                    <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px;">Xohlagan MP3 formatdagi qo'shiqni yuklang. U butun saytda avtomatik yangraydi.</p>
+                    
+                    <form action="/admin/upload_music" method="POST" enctype="multipart/form-data" style="display:flex; gap:15px; align-items:center;">
+                        <input type="file" name="music_file" accept=".mp3,audio/*" required>
+                        <button type="submit" class="btn btn-gold btn-sm" style="white-space:nowrap;">📥 Yuklash</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 3. 1-QUR'A -->
+            <div id="tab-raffle1" class="section-pane">
+                <div class="card">
+                    <h2>🎰 1-Qur'a Oynasi: Secret Santa (Sovg'a almashish)</h2>
+                    <form action="/admin/run_raffle_1" method="POST">
+                        <div class="raffle-box">
+                            <p style="margin-bottom:10px; font-weight:600; color:var(--gold);">Ishtirokchi loginlarini tanlang:</p>
+                            <div style="display:flex; flex-wrap:wrap; gap:15px;">
+                                {% for u in users %}
+                                <label style="cursor:pointer; background:#071324; padding:8px 12px; border-radius:8px; border:1px solid var(--border); display:inline-flex; align-items:center; gap:5px;">
+                                    <input type="checkbox" name="logins" value="{{ u.login }}" checked> {{ u.name }} ({{ u.login }})
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-gold" style="margin-top:15px;">🎲 1-Qur'ani Start Qilish</button>
+                    </form>
+                </div>
+            </div>
+
+         <!-- 4. 2-QUR'A (FAQAT O'ZINGIZ UCHUN AVTO-AYLANADIGAN ZAR) -->
+<div id="tab-raffle2" class="section-pane">
+    <div class="card">
+        <h2>🎲 Shaxsiy Zar Oyini</h2>
+        <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 15px;">Bu yerda hech qanday bazaga aloqasi yo'q. Zarning ustiga bosing va u o'zi aylanib raqam chiqaradi!</p>
+        
+        <!-- Zar chiqadigan va animatsiya bo'ladigan joy -->
+        <div id="dice-container" style="display: flex; align-items: center; gap: 20px; margin: 20px 0; background: rgba(7,19,36,0.5); padding: 25px; border-radius: 15px; border: 1px dashed var(--gold);">
+            <!-- Zar ustiga bosganda ham aylanadigan qildik -->
+            <div id="dice" onclick="rollPersonalDice()" style="width: 70px; height: 70px; background: #fff; color: #111; font-size: 2.2rem; font-weight: bold; display: flex; justify-content: center; align-items: center; border-radius: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.5s; cursor: pointer;" title="Zarni aylantirish uchun bosing!">🎲</div>
+            <div>
+                <p id="dice-text" style="color: var(--gold); font-weight: 600; font-size: 1.2rem;">Zar ustiga bosing yoki tugmani ishlating!</p>
+                <p style="color: var(--muted); font-size: 0.85rem; margin-top: 4px;">1 dan 6 gacha tasodifiy raqam chiqadi.</p>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-primary" onclick="rollPersonalDice()">🎲 Zarni Aylantirish</button>
+    </div>
+</div>
+
+<script>
+    function rollPersonalDice() {
+        const dice = document.getElementById('dice');
+        const diceText = document.getElementById('dice-text');
+        
+        // Zarni aylantirish animatsiyasi
+        dice.style.transform = "rotate(720deg) scale(1.2)";
+        diceText.innerText = "Zar aylanmoqda... 🎲";
+        
+        // Animatsiya davomida tez-tez raqamlarni almashtirib turish
+        let interval = setInterval(() => {
+            let randomNum = Math.floor(Math.random() * 6) + 1;
+            dice.innerText = randomNum;
+        }, 80);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            let finalRoll = Math.floor(Math.random() * 6) + 1;
+            dice.innerText = finalRoll;
+            dice.style.transform = "rotate(0deg) scale(1)";
+            diceText.innerText = `Ajoyib! Tushgan raqam: ${finalRoll} 🎉`;
+        }, 1200);
+    }
+</script>
+
+            <!-- 5. FOYDALANUVCHILAR BAZASI -->
+            <div id="tab-users" class="section-pane">
+                <div class="card">
+                    <h2>👥 Foydalanuvchilar Login va Parollari</h2>
+                    <form action="/admin/add_user" method="POST" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin:15px 0; background:rgba(7,19,36,0.5); padding:15px; border-radius:12px;">
+                        <input type="text" name="name" placeholder="Ism" required>
+                        <input type="text" name="login" placeholder="Login" required>
+                        <input type="password" name="password" placeholder="Parol" required>
+                        <button type="submit" class="btn btn-gold" style="justify-content:center;">➕ Qo'shish</button>
+                    </form>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ismi</th>
+                                <th>Login</th>
+                                <th>Parol</th>
+                                <th>1-Qur'a Natijasi</th>
+                                <th>2-Qur'a Natijasi</th>
+                                <th>Amal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td>#{{ u.id }}</td>
+                                <td><strong>{{ u.name }}</strong></td>
+                                <td><code>{{ u.login }}</code></td>
+                                <td><code style="color:var(--gold);">{{ u.password }}</code></td>
+                                <td>
+                                    {% if u.assignedTo %}
+                                        {% set t1 = users | selectattr("id", "equalto", u.assignedTo) | first %}
+                                        <span style="color:#2ec4b6;">🎁 {{ t1.name }} ga Santa</span>
+                                    {% else %} — {% endif %}
+                                </td>
+                                <td>
+                                    {% if u.match2 %}
+                                        {% set t2 = users | selectattr("id", "equalto", u.match2) | first %}
+                                        <span style="color:var(--gold);">🔗 {{ t2.name }}</span>
+                                    {% else %} — {% endif %}
+                                </td>
+                                <td><a href="/admin/delete_user/{{ u.id }}" class="btn btn-danger btn-sm">O'chirish</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function switchTab(event, tabId) {
+            const panes = document.querySelectorAll('.section-pane');
+            panes.forEach(pane => pane.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            const titles = {
+                'tab-home': "Xush kelibsiz, TOG'OJON! 👋",
+                'tab-music': "🎵 Fon Musiqasini Boshqarish",
+                'tab-raffle1': "🎰 1-Qur'a: Secret Santa",
+                'tab-raffle2': "🎲 2-Qur'a: Tasodifiy Juftliklar",
+                'tab-users': "👥 Foydalanuvchilar Boshqaruvi"
+            };
+            document.getElementById('header-title').innerText = titles[tabId];
+        }
+    </script>
+</body>
+</html>

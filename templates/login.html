@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tizimga Kirish — Game of Santa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg-dark: #071324; 
+            --bg-card: rgba(15, 34, 62, 0.9); 
+            --red: #e63946; 
+            --gold: #ffd166; 
+            --text: #f1faee; 
+            --muted: #a8dadc; 
+            --border: rgba(255, 255, 255, 0.12); 
+            --transition: all 0.3s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        
+        body { 
+            background: radial-gradient(circle at top, #102a4c 0%, var(--bg-dark) 80%); 
+            color: var(--text); 
+            min-height: 100vh; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #snow-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999;
+        }
+
+        .top-right-admin {
+            position: fixed; top: 20px; right: 25px; background: var(--red); color: #fff;
+            border: none; padding: 8px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 600;
+            cursor: pointer; z-index: 1000; box-shadow: 0 4px 15px rgba(230,57,70,0.4); transition: var(--transition);
+        }
+        .top-right-admin:hover { background: #d90429; transform: translateY(-2px); }
+
+        .auth-container {
+            background: var(--bg-card); border: 2px solid rgba(255, 209, 102, 0.4); border-radius: 22px;
+            padding: 35px 40px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            backdrop-filter: blur(15px); text-align: left; z-index: 10;
+        }
+
+        .auth-container h1 {
+            font-family: 'Mountains of Christmas', cursive; font-size: 2.5rem; color: var(--gold); margin-bottom: 5px;
+        }
+
+        .error-msg {
+            background: rgba(230, 57, 70, 0.15); border: 1px solid var(--red); color: #ff758f;
+            padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 0.85rem;
+        }
+
+        input { 
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); 
+            background: rgba(7, 19, 36, 0.9); color: #fff; margin-top: 6px; outline: none; font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        input:focus { border-color: var(--gold); box-shadow: 0 0 8px rgba(255, 209, 102, 0.2); }
+        
+        .btn { 
+            width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; 
+            display: flex; justify-content: center; align-items: center; gap: 8px; transition: var(--transition); 
+            font-size: 0.95rem; margin-top: 18px;
+        }
+        .btn-primary { background: var(--red); color: #fff; }
+        .btn-primary:hover { background: #d90429; transform: translateY(-2px); }
+
+        .link-text { text-align: center; margin-top: 18px; font-size: 0.88rem; color: var(--muted); }
+        .link-text a { color: var(--gold); text-decoration: none; font-weight: 600; }
+        .link-text a:hover { text-decoration: underline; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal-box {
+            background: #0d1f3a; border: 2px solid var(--gold); padding: 30px; border-radius: 20px;
+            width: 100%; max-width: 360px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); text-align: left;
+        }
+
+        .floating-audio {
+            position: fixed; bottom: 20px; left: 20px; background: rgba(13, 31, 58, 0.85);
+            border: 1px solid var(--border); padding: 8px 12px; border-radius: 10px; z-index: 1000;
+            display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="snow-canvas"></canvas>
+<button class="top-right-admin" onclick="openAdminModal()">🔐 Admin</button>
+
+<audio id="bg-music" loop>
+    <source src="{{ music_url }}" type="audio/mpeg">
+</audio>
+
+<div class="floating-audio">
+    <button onclick="toggleMusic()" style="background:var(--gold); border:none; padding:5px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.8rem;" id="play-btn">▶ Musiqa</button>
+    <input type="range" min="0" max="1" step="0.05" value="0.4" oninput="music.volume = this.value" style="accent-color:var(--gold); width:70px; cursor:pointer;">
+</div>
+
+<div class="auth-container">
+    <h1>Game of Santa</h1>
+    <p style="color:var(--muted); font-size:0.85rem; margin-bottom:18px;">Tizimga kirish uchun ma'lumotlaringizni kiriting.</p>
+
+    {% if error %}
+        <div class="error-msg">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <form action="/login" method="POST">
+        <label style="color:var(--muted); font-size:0.8rem;">Login</label>
+        <input type="text" name="login" placeholder="Loginingizni kiriting" required>
+        
+        <label style="color:var(--muted); font-size:0.8rem; margin-top:10px; display:block;">Parol</label>
+        <input type="password" name="password" placeholder="••••••••" required>
+        
+        <button type="submit" class="btn btn-primary">🔑 Tizimga Kirish</button>
+    </form>
+
+    <div class="link-text">
+        Hali hisobingiz yo'qmi? <a href="/register">Ro'yxatdan o'tish</a>
+    </div>
+</div>
+
+<div class="modal-overlay" id="adminModal" onclick="closeAdminModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <h3 style="color: var(--gold); margin-bottom: 12px; font-size: 1.2rem;">🔐 Admin sifatida kirish</h3>
+        <form action="/admin/login" method="POST">
+            <label style="color:var(--muted); font-size:0.8rem;">Admin Login</label>
+            <input type="text" name="login" placeholder="admin" required>
+            
+            <label style="color:var(--muted); font-size:0.8rem; margin-top:10px; display:block;">Admin Parol</label>
+            <input type="password" name="password" placeholder="••••••••" required>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="submit" class="btn" style="background:var(--gold); color:#111; margin-top:0;">Kirish</button>
+                <button type="button" class="btn" style="background:rgba(255,255,255,0.1); color:#fff; margin-top:0;" onclick="closeAdminModal()">Yopish</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const music = document.getElementById('bg-music');
+    music.volume = 0.4;
+    function toggleMusic() {
+        const btn = document.getElementById('play-btn');
+        if (music.paused) {
+            music.play();
+            btn.textContent = "⏸ To'xtatish";
+        } else {
+            music.pause();
+            btn.textContent = "▶ Musiqa";
+        }
+    }
+
+    function openAdminModal() {
+        document.getElementById('adminModal').style.display = 'flex';
+    }
+    function closeAdminModal(e) {
+        if(!e || e.target.id === 'adminModal' || e.target.tagName === 'BUTTON') {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+    }
+
+    const canvas = document.getElementById("snow-canvas");
+    const ctx = canvas.getContext("2d");
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    });
+
+    const flakes = Array.from({ length: 180 }, () => ({
+        x: Math.random() * width, y: Math.random() * height,
+        r: Math.random() * 3.5 + 1, speed: Math.random() * 1.5 + 0.5, drift: Math.random() * 0.8 - 0.4
+    }));
+
+    function animateSnow() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.beginPath();
+        for (const f of flakes) {
+            ctx.moveTo(f.x, f.y);
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+            f.y += f.speed; f.x += f.drift;
+            if (f.y > height) { f.y = -5; f.x = Math.random() * width; }
+            if (f.x > width) f.x = 0; if (f.x < 0) f.x = width;
+        }
+        ctx.fill();
+        requestAnimationFrame(animateSnow);
+    }
+    animateSnow();
+</script>
+</body>
+</html>
